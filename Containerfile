@@ -17,8 +17,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application code
 COPY app.py .
 
-# Create output directory
-RUN mkdir -p output
+# Create output and logs directories
+RUN mkdir -p output logs
 
 # Default command
 CMD ["python", "app.py", "--help"]
