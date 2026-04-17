@@ -1,3 +1,3 @@
 # get-un-admin-boundaries
 
-The Goal is to write a python application, wrapped in a docker container, that loops through the country list from the url "https://gadm.org/download_country.html" and downloads all the GeoJSON files (this can range from level-0 up to level-4 depending on the country). The Python application should use selenium and beautiful soup to web scrap the url and find, and click, the download links.
+The Goal is to write a python application, wrapped in a podman container, that loops through the country list from the url "https://gadm.org/download_country.html" and downloads all the GeoJSON files (this can range from level-0 up to level-4 depending on the country). The Python application should use selenium and beautiful soup to web scrap the url and find, and click, the download links.
