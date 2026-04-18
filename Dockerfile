@@ -5,20 +5,24 @@ FROM python:3.11-slim
 WORKDIR /app
 
 # Install system dependencies if needed
+# (uncomment if BeautifulSoup or networking needs system libs later)
 # RUN apt-get update && apt-get install -y --no-install-recommends \
 #     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements first for better caching
+# Copy requirements first (better caching)
 COPY requirements.txt .
 
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy application code
-COPY app.py .
+# Copy full application (NOT just app.py anymore)
+COPY . .
 
-# Create output and logs directories
-RUN mkdir -p output logs
+# Ensure runtime directories exist
+RUN mkdir -p /app/output /app/logs
 
-# Default command
-CMD ["python", "app.py", "--help"]
+# Optional: make Python output cleaner in Docker logs
+ENV PYTHONUNBUFFERED=1
+
+# Default command now points to your CLI entrypoint
+CMD ["python", "/app/main.py"]
