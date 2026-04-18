@@ -42,7 +42,7 @@ logger = logging.getLogger(__name__)
     retry=retry_if_exception_type(requests.RequestException),
     before_sleep=lambda retry_state: logger.warning(f"Retrying read_gadm_webpage (attempt {retry_state.attempt_number})...")
 )
-def read_gadm_webpage(url = "https://gadm.org/download_world.html"):
+def read_gadm_webpage(url: str = "https://gadm.org/download_world.html") -> list(str):
     """Read the GADM webpage and extract download links."""
     logger.info(f"Reading {url}...")
 
@@ -71,43 +71,47 @@ def read_gadm_webpage(url = "https://gadm.org/download_world.html"):
     stop=stop_after_attempt(3),
     wait=wait_exponential(multiplier=1, min=2, max=10),
     retry=retry_if_exception_type(requests.RequestException),
-    before_sleep=lambda retry_state: logger.warning(f"Retrying download (attempt {retry_state.attempt_number})...")
+    before_sleep=lambda retry_state: logger.warning(
+        f"Retrying download (attempt {retry_state.attempt_number})..."
+    )
 )
-def download_zip_file(link, skip_existing=True):
+def download_zip_file(link: str, output_dir: str = "/app/output", skip_existing: bool = True) -> None:
     logger.info(f"Processing link: {link}")
+
+    filename = get_filename_from_url(link)
+    output_path = os.path.join(output_dir, filename)
+
+    if should_skip_file(output_path, skip_existing):
+        logger.warning(f"File already exists, skipping: {filename}")
+        return None
+
+    if os.path.exists(output_path):
+        logger.info(f"File exists, overwriting: {filename}")
+
     try:
-        response = requests.get(link, stream=True, timeout=60)
-        response.raise_for_status()
-
-        filename = os.path.basename(link)
-        output_path = os.path.join("/app/output", filename)
-
-        # Skip download if file already exists by default, unless skip_existing is False
-        if os.path.exists(output_path):
-            if skip_existing:
-                logger.warning(f"File already exists, skipping: {filename}")
-                return None
-            else:
-                logger.info(f"File already exists, overwriting: {filename}")
-
-        with open(output_path, "wb") as f:
-            for chunk in response.iter_content(chunk_size=8192):
-                f.write(chunk)
+        response = fetch_stream(link)
+        write_to_file(response, output_path)
 
         logger.info(f"Successfully downloaded: {filename}")
+        return output_path
 
     except requests.RequestException as e:
-            logger.error(f"Failed to download {link}: {e}")
+        logger.error(f"Failed to download {link}: {e}")
+        raise
 
-def download_zip_files(links, skip_existing=True):
+    return None
+
+def download_zip_files(links, skip_existing=True) -> None:
     """Download files from the provided links."""
     for link in links:
         download_zip_file(link, skip_existing=skip_existing)
 
-def main():
+    return None
 
-    log_break=f"\n{'-'*50}\n"
-    logger.info(f"{log_break}Starting GADM GeoJSON Downloader{log_break.rstrip()}")
+def main() -> None:
+
+    log_break=f"\n{'-'*50}"
+    logger.info(f"{log_break}Starting GADM GeoJSON Downloader{log_break}")
 
     # Parse command-line arguments
     parser = argparse.ArgumentParser(description="GADM GeoJSON Downloader")
@@ -132,7 +136,7 @@ def main():
     download_zip_files(download_links, skip_existing=not args.overwrite)
     logger.info("All downloads completed.")
 
-    logger.info(f"{log_break}Completed GADM GeoJSON Downloader{log_break.rstrip()}")
+    logger.info(f"{log_break}Completed GADM GeoJSON Downloader{log_break}")
 
 if __name__ == "__main__":
     main()
