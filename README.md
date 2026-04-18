@@ -27,4 +27,4 @@ A Python web scraping application wrapped in a docker container that downloads G
 
 ### Docker Compose
 
-The [docker-compose.yaml](./docker-compose.yaml) file is configured with the most common use case. During development edit the ```command``` variable for testing needs. If needs get more specific it is recommended to use the **_Docker_** commands above.
+The [docker-compose.yaml](./docker-compose.yaml) file is configured with the most common use case. During development edit the ```command``` variable for testing needs. If needs get more specific it is recommended to use the **_Docker_** commands above. Otherwise use the command ```docker compose up --build``` to execute the yaml file
