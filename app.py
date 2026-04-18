@@ -11,6 +11,7 @@ import os
 import sys
 import requests
 from bs4 import BeautifulSoup
+from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
 
 # Configure logging
 # Available levels: DEBUG, INFO, WARNING, ERROR, CRITICAL
@@ -36,6 +37,12 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
+@retry(
+    stop=stop_after_attempt(3),
+    wait=wait_exponential(multiplier=1, min=2, max=10),
+    retry=retry_if_exception_type(requests.RequestException),
+    before_sleep=lambda retry_state: logger.warning(f"Retrying read_gadm_webpage (attempt {retry_state.attempt_number})...")
+)
 def read_gadm_webpage(url = "https://gadm.org/download_world.html"):
     """Read the GADM webpage and extract download links."""
     logger.info(f"Reading {url}...")
@@ -61,34 +68,42 @@ def read_gadm_webpage(url = "https://gadm.org/download_world.html"):
         logger.error(f"Failed to fetch webpage: {e}")
         return []
 
-def get_download_links(links, skip_existing=True):
+@retry(
+    stop=stop_after_attempt(3),
+    wait=wait_exponential(multiplier=1, min=2, max=10),
+    retry=retry_if_exception_type(requests.RequestException),
+    before_sleep=lambda retry_state: logger.warning(f"Retrying download (attempt {retry_state.attempt_number})...")
+)
+def download_zip_file(link, skip_existing=True):
+    logger.info(f"Processing link: {link}")
+    try:
+        response = requests.get(link, stream=True, timeout=60)
+        response.raise_for_status()
+
+        filename = os.path.basename(link)
+        output_path = os.path.join("/app/output", filename)
+
+        # Skip download if file already exists by default, unless skip_existing is False
+        if os.path.exists(output_path):
+            if skip_existing:
+                logger.warning(f"File already exists, skipping: {filename}")
+                return None
+            else:
+                logger.info(f"File already exists, overwriting: {filename}")
+
+        with open(output_path, "wb") as f:
+            for chunk in response.iter_content(chunk_size=8192):
+                f.write(chunk)
+
+        logger.info(f"Successfully downloaded: {filename}")
+
+    except requests.RequestException as e:
+            logger.error(f"Failed to download {link}: {e}")
+
+def download_zip_files(links, skip_existing=True):
     """Download files from the provided links."""
     for link in links:
-        logger.info(f"Processing link: {link}")
-        try:
-            response = requests.get(link, stream=True, timeout=60)
-            response.raise_for_status()
-
-            filename = os.path.basename(link)
-            output_path = os.path.join("/app/output", filename)
-
-            # Skip download if file already exists by default, unless skip_existing is False
-            if os.path.exists(output_path):
-                if skip_existing:
-                    logger.warning(f"File already exists, skipping: {filename}")
-                    continue
-                else:
-                    logger.info(f"File already exists, deleting (before re-writing): {filename}")
-                    os.remove(output_path)
-
-            with open(output_path, "wb") as f:
-                for chunk in response.iter_content(chunk_size=8192):
-                    f.write(chunk)
-
-            logger.info(f"Successfully downloaded: {filename}")
-
-        except requests.RequestException as e:
-            logger.error(f"Failed to download {link}: {e}")
+        download_zip_file(link, skip_existing=skip_existing)
 
 def main():
 
@@ -107,12 +122,12 @@ def main():
     args = parser.parse_args()
 
     logger.info('Hello World! This is the GADM GeoJSON Downloader.')
-    logger.info(f"Force download: {args.overwrite}")
+    logger.info(f"Overwrite existing files: {args.overwrite}")
 
     download_links = read_gadm_webpage(args.url)
     logger.info(f"Total download links found: {len(download_links)}")
 
-    get_download_links(download_links, skip_existing=not args.overwrite)
+    download_zip_files(download_links, skip_existing=not args.overwrite)
     logger.info("All downloads completed.")
 
 if __name__ == "__main__":
