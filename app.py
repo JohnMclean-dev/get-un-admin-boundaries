@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """
 GADM GeoJSON Downloader
-TODO: Implement application logic
 """
 
 import argparse
