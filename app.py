@@ -106,6 +106,9 @@ def download_zip_files(links, skip_existing=True):
 
 def main():
 
+    log_break=f"\n{'-'*50}\n"
+    logger.info(f"{log_break}Starting GADM GeoJSON Downloader{log_break.rstrip()}")
+
     # Parse command-line arguments
     parser = argparse.ArgumentParser(description="GADM GeoJSON Downloader")
     parser.add_argument(
@@ -128,6 +131,8 @@ def main():
 
     download_zip_files(download_links, skip_existing=not args.overwrite)
     logger.info("All downloads completed.")
+
+    logger.info(f"{log_break}Completed GADM GeoJSON Downloader{log_break.rstrip()}")
 
 if __name__ == "__main__":
     main()
