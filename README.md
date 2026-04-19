@@ -1,30 +1,161 @@
 # GADM GeoJSON Downloader
 
-A Python web scraping application wrapped in a docker container that downloads GeoJSON administrative boundary files from [GADM](https://gadm.org).
+A Python web scraping application wrapped in a Docker container that downloads GeoJSON/GeoPackage administrative boundary files from [GADM](https://gadm.org).
 
-## Initializing repo
+---
 
-- Create directories for "output" and "logs": ```mkdir output logs```
+## 📦 Initialization
 
-## Docker commands or Docker Compose commands
+Create required directories:
 
-### Docker
-- Build: ```docker build -t gadm-downloader .```
-- Run options:
-    - Run with default command (currently does nothing): ```docker run --rm gadm-downloader```
+```bash
+mkdir output logs
+```
 
-    - Run with debug logging: ```docker run --rm -e LOG_LEVEL=DEBUG gadm-downloader```
+---
 
-    - Run with volume mount for output files: ```docker run --rm -v $(pwd)/output:/app/output -v $(pwd)/logs:/app/logs gadm-downloader```
+## ⚙️ CLI Options
 
-    - Run python app command interactively (enter container shell): ```docker run --rm -it -v $(pwd)/output:/app/output -v $(pwd)/logs:/app/logs gadm-downloader python app.py --help```
-    
-    - Run interactively (enter container shell): ```docker run --rm -it gadm-downloader /bin/sh```
+The application uses **explicit modes** for file handling and (future) database operations.
 
-    - Run with all options interactively (debug + volumes + interactive): ```docker run --rm -it -e LOG_LEVEL=DEBUG -v $(pwd)/output:/app/output -v $(pwd)/logs:/app/logs gadm-downloader /bin/sh```
+### File Handling Modes
 
-    - Run with all options command prompt (debug + volumes): ```docker run --rm -e LOG_LEVEL=DEBUG -v $(pwd)/output:/app/output -v $(pwd)/logs:/app/logs gadm-downloader python app.py --help```
+```bash
+--file-mode {skip,overwrite,refresh}
+```
 
-### Docker Compose
+| Mode        | Behavior |
+|------------|--------|
+| skip (default) | Skip existing files |
+| overwrite | Re-download and overwrite existing files |
+| refresh | Delete all files in output/ before downloading |
 
-The [docker-compose.yaml](./docker-compose.yaml) file is configured with the most common use case. During development edit the ```command``` variable for testing needs. If needs get more specific it is recommended to use the **_Docker_** commands above. Otherwise use the command ```docker compose up --build``` to execute the yaml file
+---
+
+### Database Modes (future use)
+
+```bash
+--db-mode {append,truncate}
+```
+
+| Mode       | Behavior |
+|-----------|--------|
+| append (default) | Add data to existing table |
+| truncate | Clear table before inserting |
+
+> ⚠️ Database functionality is not yet implemented.
+
+---
+
+## 🐳 Docker Usage
+
+### Build Image
+
+```bash
+docker build -t gadm-downloader .
+```
+
+---
+
+### Run Examples
+
+#### Default run
+
+```bash
+docker run --rm gadm-downloader
+```
+
+---
+
+#### Debug logging
+
+```bash
+docker run --rm -e LOG_LEVEL=DEBUG gadm-downloader
+```
+
+---
+
+#### With volumes
+
+```bash
+docker run --rm \
+  -v $(pwd)/output:/app/output \
+  -v $(pwd)/logs:/app/logs \
+  gadm-downloader
+```
+
+---
+
+#### CLI option example
+
+```bash
+docker run --rm \
+  -v $(pwd)/output:/app/output \
+  -v $(pwd)/logs:/app/logs \
+  gadm-downloader \
+  python gadm_downloader/main.py --file-mode overwrite
+```
+
+---
+
+#### Full refresh
+
+```bash
+docker run --rm \
+  -v $(pwd)/output:/app/output \
+  -v $(pwd)/logs:/app/logs \
+  gadm-downloader \
+  python gadm_downloader/main.py --file-mode refresh
+```
+
+---
+
+#### Interactive shell
+
+```bash
+docker run --rm -it gadm-downloader /bin/sh
+```
+
+---
+
+#### Debug + interactive
+
+```bash
+docker run --rm -it \
+  -e LOG_LEVEL=DEBUG \
+  -v $(pwd)/output:/app/output \
+  -v $(pwd)/logs:/app/logs \
+  gadm-downloader /bin/sh
+```
+
+---
+
+#### CLI help
+
+```bash
+docker run --rm gadm-downloader python gadm_downloader/main.py --help
+```
+
+---
+
+## 🐳 Docker Compose
+
+```bash
+docker compose up --build
+```
+
+---
+
+## 🚀 Pipeline Overview
+
+1. Scrape GADM download page  
+2. Download dataset archives  
+3. Extract archives  
+4. Discover GeoPackage files  
+5. Load into a GeoDataFrame  
+
+---
+
+## 🔮 Future Enhancements
+
+- Postgres/PostGIS integration
