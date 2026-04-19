@@ -3,6 +3,7 @@ import logging
 import requests
 from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
 
+from config import CHUNK_SIZE
 from utils import get_filename_from_url, should_skip_file
 
 logger = logging.getLogger(__name__)
@@ -12,7 +13,7 @@ def fetch_stream(url: str):
     response.raise_for_status()
     return response
 
-def write_to_file(response, output_path: str, chunk_size: int = 8192):
+def write_to_file(response, output_path: str, chunk_size: int = CHUNK_SIZE):
     with open(output_path, "wb") as f:
         for chunk in response.iter_content(chunk_size=chunk_size):
             f.write(chunk)
