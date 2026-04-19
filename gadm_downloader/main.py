@@ -1,6 +1,5 @@
 import argparse
 import logging
-from pathlib import Path
 
 from config import DEFAULT_URL, OUTPUT_DIR
 from logging_config import setup_logging
@@ -8,6 +7,7 @@ from scraper import read_gadm_webpage
 from downloader import download_zip_files
 from geopackage_reader import read_geopackage
 from unzipper import unzip_files
+from utils import list_geopackage_files
 
 def main():
     ## Application setup
@@ -43,9 +43,14 @@ def main():
         overwrite=args.overwrite
     )
 
-    # Read one of the downloaded GeoPackage files
-    gdf = read_geopackage(Path(OUTPUT_DIR) / 'gadm_410-gpkg' / 'gadm_410.gpkg')
-    logger.info(f"First few rows of the GeoDataFrame:\n{gdf.head()}")
+    # Get the newest GeoPackage file (assumes naming convention allows sorting by name)
+    sorted_geopackage_files = list_geopackage_files(OUTPUT_DIR)
+    first_geopackage_file = sorted_geopackage_files[0] if sorted_geopackage_files else None
+
+    # Read the newest GeoPackage file
+    gdf = read_geopackage(first_geopackage_file) if first_geopackage_file else None
+    if gdf is not None:
+        logger.info(f"First few rows of the GeoDataFrame:\n{gdf.head()}")
 
     logger.info("Done")
 
