@@ -36,4 +36,4 @@ RUN mkdir -p /app/output /app/logs
 ENV PYTHONUNBUFFERED=1
 
 # Default command
-CMD ["python", "/app/main.py"]
+CMD ["python", "/app/gadm_downloader/main.py"]

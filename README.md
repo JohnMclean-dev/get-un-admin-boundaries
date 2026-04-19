@@ -140,8 +140,29 @@ docker run --rm gadm-downloader python gadm_downloader/main.py --help
 
 ## 🐳 Docker Compose
 
+### Production / Default
+
+Run the standard pipeline:
+
 ```bash
 docker compose up --build
+```
+
+---
+
+### Select Environment
+
+Run the application in different environments using Compose overrides:
+
+```bash
+# Development (mounted source code, debug-friendly)
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+
+# Staging
+docker compose -f docker-compose.yml -f docker-compose.stg.yml up --build
+
+# Production
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up --build
 ```
 
 ---
@@ -158,4 +179,4 @@ docker compose up --build
 
 ## 🔮 Future Enhancements
 
-- Postgres/PostGIS integration
+- Postgres/PostGIS integration  

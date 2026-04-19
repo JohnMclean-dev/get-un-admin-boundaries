@@ -1,0 +1,10 @@
+services:
+  gadm-downloader:
+    volumes:
+      - ./output:/app/output
+      - ./logs:/app/logs
+
+    command: ["python", "/app/gadm_downloader/main.py", "--file-mode", "skip", "--db-mode", "append"]
+
+    environment:
+      - LOG_LEVEL=INFO

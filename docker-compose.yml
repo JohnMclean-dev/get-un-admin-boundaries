@@ -1,0 +1,7 @@
+services:
+  gadm-downloader:
+    build: .
+    image: gadm-downloader:latest
+    container_name: gadm-downloader
+    restart: "no"
+
