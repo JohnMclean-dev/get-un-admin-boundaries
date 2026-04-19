@@ -4,25 +4,36 @@ FROM python:3.11-slim
 # Set working directory
 WORKDIR /app
 
-# Install system dependencies if needed
-# (uncomment if BeautifulSoup or networking needs system libs later)
-# RUN apt-get update && apt-get install -y --no-install-recommends \
-#     && rm -rf /var/lib/apt/lists/*
+# Install system dependencies required for GeoPandas / GDAL stack
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gdal-bin \
+    libgdal-dev \
+    libgeos-dev \
+    libproj-dev \
+    proj-data \
+    proj-bin \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+# Ensure GDAL can be found during pip installs
+ENV CPLUS_INCLUDE_PATH=/usr/include/gdal
+ENV C_INCLUDE_PATH=/usr/include/gdal
 
 # Copy requirements first (better caching)
 COPY requirements.txt .
 
-# Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+# Upgrade pip and install Python dependencies
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
 
-# Copy full application (NOT just app.py anymore)
+# Copy full application
 COPY . .
 
 # Ensure runtime directories exist
 RUN mkdir -p /app/output /app/logs
 
-# Optional: make Python output cleaner in Docker logs
+# Cleaner logs in Docker
 ENV PYTHONUNBUFFERED=1
 
-# Default command now points to your CLI entrypoint
+# Default command
 CMD ["python", "/app/main.py"]
