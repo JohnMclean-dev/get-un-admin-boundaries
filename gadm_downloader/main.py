@@ -1,11 +1,13 @@
 import argparse
 import logging
+from pathlib import Path
 
 from config import DEFAULT_URL, OUTPUT_DIR
 from logging_config import setup_logging
 from scraper import read_gadm_webpage
 from downloader import download_zip_files
 from geopackage_reader import read_geopackage
+from unzipper import unzip_files
 
 def main():
     ## Application setup
@@ -32,10 +34,17 @@ def main():
         skip_existing=not args.overwrite
     )
 
-    # TODO: Add function to unzip downloaded files
+    # Unzip downloaded files
+    logger.info("Extracting downloaded zip files")
+
+    unzip_files(
+        input_dir=OUTPUT_DIR,
+        output_dir=OUTPUT_DIR,
+        overwrite=args.overwrite
+    )
 
     # Read one of the downloaded GeoPackage files
-    gdf = read_geopackage(OUTPUT_DIR + '/gadm_410.gpkg')
+    gdf = read_geopackage(Path(OUTPUT_DIR) / 'gadm_410-gpkg' / 'gadm_410.gpkg')
     logger.info(f"First few rows of the GeoDataFrame:\n{gdf.head()}")
 
     logger.info("Done")
