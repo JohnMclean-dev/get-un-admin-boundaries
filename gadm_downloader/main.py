@@ -48,9 +48,9 @@ def main():
     first_geopackage_file = sorted_geopackage_files[0] if sorted_geopackage_files else None
 
     # Read the newest GeoPackage file
-    gdf = read_geopackage(first_geopackage_file) if first_geopackage_file else None
-    if gdf is not None:
-        logger.info(f"First few rows of the GeoDataFrame:\n{gdf.head()}")
+    gadm_global_sub_divisions = read_geopackage(first_geopackage_file) if first_geopackage_file else None
+    if gadm_global_sub_divisions is not None:
+        logger.info(f"First few rows of the GeoDataFrame:\n{gadm_global_sub_divisions.head()}")
 
     logger.info("Done")
 
