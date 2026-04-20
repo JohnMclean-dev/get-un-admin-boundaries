@@ -57,9 +57,7 @@ docker build -t gadm-downloader .
 
 ---
 
-### Run Examples
-
-#### Default run
+### Run (Default)
 
 ```bash
 docker run --rm gadm-downloader
@@ -67,7 +65,7 @@ docker run --rm gadm-downloader
 
 ---
 
-#### Debug logging
+### Run with Debug Logging
 
 ```bash
 docker run --rm -e LOG_LEVEL=DEBUG gadm-downloader
@@ -75,7 +73,7 @@ docker run --rm -e LOG_LEVEL=DEBUG gadm-downloader
 
 ---
 
-#### With volumes
+### Run with Data Persistence (Volumes)
 
 ```bash
 docker run --rm \
@@ -86,7 +84,7 @@ docker run --rm \
 
 ---
 
-#### CLI option example
+### Run with Custom CLI Options
 
 ```bash
 docker run --rm \
@@ -98,19 +96,7 @@ docker run --rm \
 
 ---
 
-#### Full refresh
-
-```bash
-docker run --rm \
-  -v $(pwd)/output:/app/output \
-  -v $(pwd)/logs:/app/logs \
-  gadm-downloader \
-  python gadm_downloader/main.py --file-mode refresh
-```
-
----
-
-#### Interactive shell
+### Interactive Mode
 
 ```bash
 docker run --rm -it gadm-downloader /bin/sh
@@ -118,19 +104,7 @@ docker run --rm -it gadm-downloader /bin/sh
 
 ---
 
-#### Debug + interactive
-
-```bash
-docker run --rm -it \
-  -e LOG_LEVEL=DEBUG \
-  -v $(pwd)/output:/app/output \
-  -v $(pwd)/logs:/app/logs \
-  gadm-downloader /bin/sh
-```
-
----
-
-#### CLI help
+### CLI Help
 
 ```bash
 docker run --rm gadm-downloader python gadm_downloader/main.py --help
@@ -154,14 +128,17 @@ docker compose up --build
 
 Run the application in different environments using Compose overrides:
 
+#### Development (mounted source code, debug-friendly)
 ```bash
-# Development (mounted source code, debug-friendly)
 docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
-
-# Staging
+```
+#### Staging
+```bash
 docker compose -f docker-compose.yml -f docker-compose.stg.yml up --build
+```
 
-# Production
+#### Production
+```bash
 docker compose -f docker-compose.yml -f docker-compose.prod.yml up --build
 ```
 
