@@ -46,6 +46,8 @@ def main():
         skip_existing = True
 
     # Download zip files from GADM website
+    logging_bookmark = "-" * 90
+    logging.info(logging_bookmark)
     logger.info("Starting downloader")
 
     links = read_gadm_webpage(args.url)
@@ -84,6 +86,7 @@ def main():
     # TODO: Set up database connection for next steps
 
     logger.info("Done")
+    logging.info(logging_bookmark)
 
 if __name__ == "__main__":
     main()
