@@ -8,6 +8,7 @@ from downloader import download_zip_files
 from geopackage_reader import read_geopackage
 from utils import clear_directory, unzip_files, list_geopackage_files
 
+
 def main():
     ## Application setup
     # Logging
@@ -19,9 +20,15 @@ def main():
 
     parser.add_argument(
         "--file-mode",
-        choices=["skip", "overwrite", "refresh"],
+        choices=["skip", "overwrite", "refresh", "read"],
         default="skip",
-        help="How to handle existing files in the output directory"
+        help=(
+            "How to handle existing files in the output directory:\n"
+            "skip = use existing files if present\n"
+            "overwrite = re-download without clearing\n"
+            "refresh = clear directory and re-download\n"
+            "read = skip scraping/downloading and only read existing files"
+        )
     )
 
     parser.add_argument(
@@ -41,89 +48,102 @@ def main():
 
     args = parser.parse_args()
 
-    ## Main logic
-    # Handle file mode
-    if args.file_mode == "refresh":
-        clear_directory(OUTPUT_DIR)
-        skip_existing = False
-    elif args.file_mode == "overwrite":
-        skip_existing = False
-    else:
-        skip_existing = True
-
-    # Download zip files from GADM website
     logging_bookmark = "-" * 90
-    logging.info(logging_bookmark)
-    logger.info("Starting downloader")
+    logger.info(logging_bookmark)
 
-    links = read_gadm_webpage(args.url)
-    logger.info(f"Found {len(links)} links")
+    ## READ MODE (skip web scraping entirely)
+    if args.file_mode == "read":
+        logger.info("File mode: READ (skipping scrape, download, and unzip)")
 
-    download_zip_files(
-        links,
-        output_dir=OUTPUT_DIR,
-        skip_existing=skip_existing
-    )
+        sorted_geopackage_files = list_geopackage_files(OUTPUT_DIR)
 
-    # Unzip downloaded files
-    logger.info("Extracting downloaded zip files")
+        if not sorted_geopackage_files:
+            logger.error("No GeoPackage files found in output directory")
+            return
 
-    unzip_files(
-        input_dir=OUTPUT_DIR,
-        output_dir=OUTPUT_DIR,
-        skip_existing=skip_existing
-    )
+        first_geopackage_file = sorted_geopackage_files[0]
+        logger.info(f"Using existing GeoPackage: {first_geopackage_file}")
 
-    # Get the newest GeoPackage file as defined by the GADM file naming convention
-    sorted_geopackage_files = list_geopackage_files(OUTPUT_DIR)
+        gadm_global_sub_divisions = read_geopackage(first_geopackage_file)
+        if gadm_global_sub_divisions is not None:
+            logger.info(
+                f"First few rows of discovered GeoPackage:\n"
+                f"{gadm_global_sub_divisions.head()}"
+            )
 
-    if not sorted_geopackage_files:
-        logger.error("No GeoPackage files found after extraction")
-        return
+    ## NORMAL MODES (scrape + download + unzip)
+    else:
+        # Handle file mode
+        if args.file_mode == "refresh":
+            clear_directory(OUTPUT_DIR)
+            skip_existing = False
+        elif args.file_mode == "overwrite":
+            skip_existing = False
+        else:
+            skip_existing = True
 
-    first_geopackage_file = sorted_geopackage_files[0]
-    logger.info(f"Using GeoPackage: {first_geopackage_file}")
+        logger.info("Starting downloader")
 
-    # Read GeoPackage
-    gadm_global_sub_divisions = read_geopackage(first_geopackage_file)
-    if gadm_global_sub_divisions is not None:
-        logger.info(f"First few rows of discovered GeoPackage:\n{gadm_global_sub_divisions.head()}")
+        links = read_gadm_webpage(args.url)
+        logger.info(f"Found {len(links)} links")
+
+        download_zip_files(
+            links,
+            output_dir=OUTPUT_DIR,
+            skip_existing=skip_existing
+        )
+
+        logger.info("Extracting downloaded zip files")
+
+        unzip_files(
+            input_dir=OUTPUT_DIR,
+            output_dir=OUTPUT_DIR,
+            skip_existing=skip_existing
+        )
+
+        sorted_geopackage_files = list_geopackage_files(OUTPUT_DIR)
+
+        if not sorted_geopackage_files:
+            logger.error("No GeoPackage files found after extraction")
+            return
+
+        first_geopackage_file = sorted_geopackage_files[0]
+        logger.info(f"Using GeoPackage: {first_geopackage_file}")
+
+        gadm_global_sub_divisions = read_geopackage(first_geopackage_file)
+        if gadm_global_sub_divisions is not None:
+            logger.info(
+                f"First few rows of discovered GeoPackage:\n"
+                f"{gadm_global_sub_divisions.head()}"
+            )
 
     # TODO: Implement actual database logic in the following blocks
-    # DB handling
     logger.info(f"Database mode: {args.db_mode}")
 
     if args.db_mode == "create-if-new":
         logger.info("Ensuring tables exist (create if missing)")
-        # create_tables_if_not_exist()
 
         if gadm_global_sub_divisions is not None:
             logger.info("Inserting data into database")
-            # insert_data(gadm_global_sub_divisions)
 
     elif args.db_mode == "append":
         logger.info("Appending to existing tables")
 
         if gadm_global_sub_divisions is not None:
             logger.info("Inserting data into database")
-            # insert_data(gadm_global_sub_divisions)
 
     elif args.db_mode == "truncate":
         logger.info("Truncating tables before insert")
-        # truncate_tables()
 
         if gadm_global_sub_divisions is not None:
             logger.info("Inserting data into database")
-            # insert_data(gadm_global_sub_divisions)
 
     elif args.db_mode == "check-if-exists":
         logger.info("Checking if required tables exist")
-        # verify_tables_exist()
-
         logger.info("Check complete — no data written")
 
     logger.info("Done")
-    logging.info(logging_bookmark)
+    logger.info(logging_bookmark)
 
 
 if __name__ == "__main__":
