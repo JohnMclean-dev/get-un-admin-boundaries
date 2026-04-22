@@ -5,7 +5,7 @@ services:
       - ./logs:/app/logs
       - ./gadm_downloader:/app/gadm_downloader
 
-    command: ["python", "/app/gadm_downloader/main.py", "--file-mode", "skip", "--db-mode", "append"]
+    command: ["python", "/app/gadm_downloader/main.py", "--file-mode", "skip", "--db-mode", "check-if-exists"]
 
     environment:
       - LOG_LEVEL=DEBUG

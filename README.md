@@ -16,7 +16,9 @@ mkdir output logs
 
 ## ⚙️ CLI Options
 
-The application uses **explicit modes** for file handling and (future) database operations.
+The application uses **explicit modes** for file handling and database operations.
+
+---
 
 ### File Handling Modes
 
@@ -28,22 +30,25 @@ The application uses **explicit modes** for file handling and (future) database 
 |------------|--------|
 | skip (default) | Skip existing files |
 | overwrite | Re-download and overwrite existing files |
-| refresh | Delete all files in output/ before downloading |
+| refresh | Delete all files in `output/` before downloading |
 
 ---
 
-### Database Modes (future use)
+### Database Modes (planned)
 
 ```bash
---db-mode {append,truncate}
+--db-mode {create-if-new,append,truncate,check-if-exists}
 ```
 
-| Mode       | Behavior |
-|-----------|--------|
-| append (default) | Add data to existing table |
-| truncate | Clear table before inserting |
+| Mode | Behavior |
+|------|--------|
+| create-if-new (default) | Create tables if they do not exist, then insert data |
+| append | Insert data into existing tables |
+| truncate | Clear tables, then insert data |
+| check-if-exists | Verify required tables exist (no data written) |
 
-> ⚠️ Database functionality is not yet implemented.
+> ⚠️ Database functionality is **not yet implemented**.  
+> These modes define intended behavior for upcoming Postgres/PostGIS integration.
 
 ---
 
@@ -91,7 +96,7 @@ docker run --rm \
   -v $(pwd)/output:/app/output \
   -v $(pwd)/logs:/app/logs \
   gadm-downloader \
-  python gadm_downloader/main.py --file-mode overwrite
+  python gadm_downloader/main.py --file-mode overwrite --db-mode create-if-new
 ```
 
 ---
@@ -132,6 +137,7 @@ Run the application in different environments using Compose overrides:
 ```bash
 docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
 ```
+
 #### Staging
 ```bash
 docker compose -f docker-compose.yml -f docker-compose.stg.yml up --build
@@ -151,9 +157,11 @@ docker compose -f docker-compose.yml -f docker-compose.prod.yml up --build
 3. Extract archives  
 4. Discover GeoPackage files  
 5. Load into a GeoDataFrame  
+6. *(Planned)* Load into Postgres/PostGIS  
 
 ---
 
 ## 🔮 Future Enhancements
 
-- Postgres/PostGIS integration  
+- Postgres/PostGIS integration
+- Automated schema creation & validation
