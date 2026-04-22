@@ -113,7 +113,7 @@ def list_geopackage_files(directory: str | Path) -> list[Path]:
         return []
 
     gpkg_files = list(directory.rglob("*.gpkg"))
-    gpkg_files = sorted(gpkg_files, key=lambda f: f.stat().st_mtime, reverse=True)
+    gpkg_files = sorted(gpkg_files, key=lambda f: f.name, reverse=True)
 
     if not gpkg_files:
         logger.warning(f"No GeoPackage files found in {directory}")
