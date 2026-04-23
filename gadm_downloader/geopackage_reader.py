@@ -8,6 +8,9 @@ def read_geopackage(file_path: str | Path, layer: str | None = None) -> gpd.GeoD
     """
     Read a GeoPackage file into a GeoDataFrame.
 
+    Tries the default GeoPandas engine first (usually pyogrio if available),
+    and falls back to Fiona if the first attempt fails.
+
     Parameters
     ----------
     file_path : str | Path
@@ -19,24 +22,34 @@ def read_geopackage(file_path: str | Path, layer: str | None = None) -> gpd.GeoD
     -------
     geopandas.GeoDataFrame
     """
-    
+
     file_path = Path(file_path)
 
     if not file_path.exists():
         raise FileNotFoundError(f"GeoPackage not found: {file_path}")
 
+    logger.info(f"Reading GeoPackage: {file_path}")
+
+    # 1st attempt: default engine (usually pyogrio if installed)
     try:
-        logger.info(f"Reading GeoPackage with pyogrio: {file_path}")
-
-        gdf = gpd.read_file(
-            file_path,
-            layer=layer,
-            engine="pyogrio"
-        )
-
-        logger.info(f"Loaded {len(gdf)} features")
+        gdf = gpd.read_file(file_path, layer=layer)
+        logger.info(f"Loaded {len(gdf)} features using default engine")
         return gdf
 
     except Exception as e:
-        logger.exception("Failed to read GeoPackage")
-        raise RuntimeError(f"Error reading GeoPackage: {file_path}") from e
+        logger.warning(
+            f"Default GeoPandas engine failed for {file_path}. "
+            f"Retrying with Fiona. Error: {e}"
+        )
+
+    # 2nd attempt: explicit Fiona fallback
+    try:
+        gdf = gpd.read_file(file_path, layer=layer, engine="fiona")
+        logger.info(f"Loaded {len(gdf)} features using Fiona engine")
+        return gdf
+
+    except Exception as e:
+        logger.exception("Both GeoPandas engines failed")
+        raise RuntimeError(
+            f"Error reading GeoPackage (both engines failed): {file_path}"
+        ) from e

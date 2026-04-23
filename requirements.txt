@@ -1,13 +1,10 @@
-# Resolve version conflicts with pyogrio and numpy
-numpy<2
-
-# GADM GeoJSON/GeoPackage Downloader + GIS dependencies
+# Core
 beautifulsoup4==4.12.3
 requests==2.32.3
 tenacity==9.0.0
 
-# Geo spatial stack
-geopandas==0.14.4
-pyogrio==0.7.2
-shapely==2.0.4
-pandas==2.2.2
+# Geo stack (modern, no hacks needed)
+geopandas>=1.0.0
+shapely>=2.0
+pandas>=2.2
+pyogrio>=0.8
