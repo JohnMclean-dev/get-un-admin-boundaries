@@ -1,5 +1,7 @@
 import argparse
 import logging
+from db import create_db_engine, test_connection
+from pathlib import Path
 
 from config import DEFAULT_URL, OUTPUT_DIR
 from logging_config import setup_logging
@@ -18,6 +20,7 @@ def main():
     # Argument parsing
     parser = argparse.ArgumentParser()
 
+    # TODO: rethink file mode options
     parser.add_argument(
         "--file-mode",
         choices=["skip", "overwrite", "refresh", "read"],
@@ -117,30 +120,51 @@ def main():
                 f"{gadm_global_sub_divisions.head()}"
             )
 
-    # TODO: Implement actual database logic in the following blocks
     logger.info(f"Database mode: {args.db_mode}")
 
+    # Establish database connection
+    engine = create_db_engine()
+
+    if not test_connection(engine):
+        logger.error("Exiting due to database connection failure")
+        return
+
+    # TODO: 0 - Create tables if needed
     if args.db_mode == "create-if-new":
         logger.info("Ensuring tables exist (create if missing)")
 
         if gadm_global_sub_divisions is not None:
-            logger.info("Inserting data into database")
+            try:
+                table_name = Path(first_geopackage_file).stem
 
+                logger.info(f"Writing to table: {table_name}")
+
+                gadm_global_sub_divisions.to_postgis(
+                    name=table_name,
+                    con=engine,
+                    if_exists="append",   # creates table if it doesn't exist
+                    index=False
+                )
+
+                logger.info("Insert successful")
+
+            except Exception as e:
+                logger.exception(f"Failed to insert data: {e}")
+                return
+
+    # TODO: 1 - Append data to existing tables
     elif args.db_mode == "append":
         logger.info("Appending to existing tables")
 
         if gadm_global_sub_divisions is not None:
             logger.info("Inserting data into database")
 
+    # TODO: 2 - Truncate tables before insert
     elif args.db_mode == "truncate":
         logger.info("Truncating tables before insert")
 
         if gadm_global_sub_divisions is not None:
             logger.info("Inserting data into database")
-
-    elif args.db_mode == "check-if-exists":
-        logger.info("Checking if required tables exist")
-        logger.info("Check complete — no data written")
 
     logger.info("Done")
     logger.info(logging_bookmark)

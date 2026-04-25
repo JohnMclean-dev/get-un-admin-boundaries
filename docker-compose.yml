@@ -14,7 +14,7 @@ services:
       - DB_PASSWORD=gadm_password
 
   postgres:
-    image: postgres:16
+    image: postgis/postgis:16-3.4
     container_name: postgres
     restart: unless-stopped
     environment:
@@ -23,6 +23,7 @@ services:
       POSTGRES_PASSWORD: gadm_password
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./db/init:/docker-entrypoint-initdb.d
     ports:
       - "5432:5432"
 

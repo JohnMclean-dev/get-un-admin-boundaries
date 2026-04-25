@@ -21,7 +21,7 @@ def read_gadm_webpage(url: str) -> list[str]:
 
     download_links = [
         link["href"] for link in links
-        if link["href"].endswith(".zip")
+        if link["href"].endswith("gpkg.zip")
     ]
 
     logger.info(f"Found {len(download_links)} links")
