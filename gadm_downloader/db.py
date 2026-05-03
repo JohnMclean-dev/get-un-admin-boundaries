@@ -4,6 +4,7 @@ Database connection utilities using SQLAlchemy.
 
 import logging
 import os
+from urllib.parse import quote_plus
 from sqlalchemy import create_engine, text
 from sqlalchemy.engine import Engine
 
@@ -12,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 def build_db_url() -> str:
     """
-    Build a PostgreSQL connection URL from environment variables.
+    Build a SQLAlchemy PostgreSQL connection URL from environment variables.
     """
     host = os.getenv("DB_HOST", "localhost")
     port = os.getenv("DB_PORT", "5432")
@@ -20,7 +21,23 @@ def build_db_url() -> str:
     user = os.getenv("DB_USER", "postgres")
     password = os.getenv("DB_PASSWORD", "")
 
-    return f"postgresql+psycopg2://{user}:{password}@{host}:{port}/{db}"
+    return f"postgresql+psycopg2://{quote_plus(user)}:{quote_plus(password)}@{host}:{port}/{db}"
+
+
+def build_duckdb_postgres_url() -> str:
+    """
+    Build a Postgres URL suitable for DuckDB's postgres extension.
+
+    DuckDB expects the scheme to be `postgres://` rather than
+    the SQLAlchemy-compatible `postgresql://` form.
+    """
+    host = os.getenv("DB_HOST", "localhost")
+    port = os.getenv("DB_PORT", "5432")
+    db = os.getenv("DB_NAME", "postgres")
+    user = os.getenv("DB_USER", "postgres")
+    password = os.getenv("DB_PASSWORD", "")
+
+    return f"postgres://{quote_plus(user)}:{quote_plus(password)}@{host}:{port}/{db}"
 
 
 def create_db_engine(echo: bool = False) -> Engine:

@@ -1,15 +1,14 @@
 import logging
 from pathlib import Path
-import geopandas as gpd
+import duckdb
 
 logger = logging.getLogger(__name__)
 
-def read_geopackage(file_path: str | Path, layer: str | None = None) -> gpd.GeoDataFrame:
+def read_geopackage(file_path: str | Path, layer: str | None = None) -> duckdb.DuckDBPyRelation:
     """
-    Read a GeoPackage file into a GeoDataFrame.
+    Read a GeoPackage file into a DuckDB relation.
 
-    Tries the default GeoPandas engine first (usually pyogrio if available),
-    and falls back to Fiona if the first attempt fails.
+    Uses DuckDB spatial extension for efficient reading without loading into memory.
 
     Parameters
     ----------
@@ -20,7 +19,7 @@ def read_geopackage(file_path: str | Path, layer: str | None = None) -> gpd.GeoD
 
     Returns
     -------
-    geopandas.GeoDataFrame
+    duckdb.DuckDBPyRelation
     """
 
     file_path = Path(file_path)
@@ -30,26 +29,29 @@ def read_geopackage(file_path: str | Path, layer: str | None = None) -> gpd.GeoD
 
     logger.info(f"Reading GeoPackage: {file_path}")
 
-    # 1st attempt: default engine (usually pyogrio if installed)
+    # Create DuckDB connection
+    con = duckdb.connect()
+
+    # Install and load spatial extension
+    con.install_extension("spatial")
+    con.load_extension("spatial")
+
     try:
-        gdf = gpd.read_file(file_path, layer=layer)
-        logger.info(f"Loaded {len(gdf)} features using default engine")
-        return gdf
+        # Read GeoPackage
+        if layer:
+            query = f"SELECT * FROM st_read('{file_path}', layer='{layer}')"
+        else:
+            query = f"SELECT * FROM st_read('{file_path}')"
 
+        rel = con.sql(query)
+
+        # Get count without materializing
+        count = rel.count("*").fetchone()[0]
+        logger.info(f"Loaded {count} features using DuckDB spatial extension")
+
+        return rel
     except Exception as e:
-        logger.warning(
-            f"Default GeoPandas engine failed for {file_path}. "
-            f"Retrying with Fiona. Error: {e}"
-        )
-
-    # 2nd attempt: explicit Fiona fallback
-    try:
-        gdf = gpd.read_file(file_path, layer=layer, engine="fiona")
-        logger.info(f"Loaded {len(gdf)} features using Fiona engine")
-        return gdf
-
-    except Exception as e:
-        logger.exception("Both GeoPandas engines failed")
+        logger.exception("DuckDB spatial read failed")
         raise RuntimeError(
-            f"Error reading GeoPackage (both engines failed): {file_path}"
+            f"Error reading GeoPackage with DuckDB spatial extension: {file_path}"
         ) from e

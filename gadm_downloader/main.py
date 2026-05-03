@@ -1,9 +1,11 @@
 import argparse
 import logging
-from db import create_db_engine, test_connection
+import subprocess
+import os
 from pathlib import Path
 
 from config import DEFAULT_URL, OUTPUT_DIR
+from db import create_db_engine, test_connection, build_db_url
 from logging_config import setup_logging
 from scraper import read_gadm_webpage
 from downloader import download_zip_files
@@ -71,7 +73,7 @@ def main():
         if gadm_global_sub_divisions is not None:
             logger.info(
                 f"First few rows of discovered GeoPackage:\n"
-                f"{gadm_global_sub_divisions.head()}"
+                f"{gadm_global_sub_divisions.limit(5).to_df()}"
             )
 
     ## NORMAL MODES (scrape + download + unzip)
@@ -117,7 +119,7 @@ def main():
         if gadm_global_sub_divisions is not None:
             logger.info(
                 f"First few rows of discovered GeoPackage:\n"
-                f"{gadm_global_sub_divisions.head()}"
+                f"{gadm_global_sub_divisions.limit(5).to_df()}"
             )
 
     logger.info(f"Database mode: {args.db_mode}")
@@ -137,19 +139,22 @@ def main():
             try:
                 table_name = Path(first_geopackage_file).stem
 
-                logger.info(f"Writing to table: {table_name}")
+                # Use ogr2ogr to import GeoPackage into PostgreSQL.
+                # Disable COPY buffering to reduce peak memory usage during import.
+                pg_connection = f"PG:host={os.getenv('DB_HOST')} port={os.getenv('DB_PORT')} dbname={os.getenv('DB_NAME')} user={os.getenv('DB_USER')} password={os.getenv('DB_PASSWORD')}"
+                subprocess.run([
+                    'ogr2ogr',
+                    '-f', 'PostgreSQL',
+                    '-lco', 'PG_USE_COPY=NO',
+                    '-lco', 'GEOMETRY_NAME=geom',
+                    pg_connection,
+                    str(first_geopackage_file),
+                ], check=True)
 
-                gadm_global_sub_divisions.to_postgis(
-                    name=table_name,
-                    con=engine,
-                    if_exists="append",   # creates table if it doesn't exist
-                    index=False
-                )
+                logger.info("Data imported into PostgreSQL using ogr2ogr")
 
-                logger.info("Insert successful")
-
-            except Exception as e:
-                logger.exception(f"Failed to insert data: {e}")
+            except subprocess.CalledProcessError as e:
+                logger.exception(f"Failed to import data with ogr2ogr: {e}")
                 return
 
     # TODO: 1 - Append data to existing tables
