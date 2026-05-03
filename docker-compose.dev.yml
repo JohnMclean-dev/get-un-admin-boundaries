@@ -4,9 +4,60 @@ services:
       - ./output:/app/output
       - ./logs:/app/logs
       - ./gadm_downloader:/app/gadm_downloader
-
-    command: ["python", "/app/gadm_downloader/main.py", "--file-mode", "read", "--db-mode", "create-if-new"]
+    deploy:
+      resources:
+        limits:
+          memory: 8G
+        reservations:
+          memory: 4G
+    command: ["python", "/app/gadm_downloader/main.py", "--file-mode", "skip", "--db-mode", "create-if-new"]
     # command: ["python", "/app/gadm_downloader/main.py", "--help"]
 
     environment:
       - LOG_LEVEL=DEBUG
+
+  postgres:
+    image: postgis/postgis:16-3.4
+    container_name: postgres
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+        reservations:
+          memory: 2G
+    environment:
+      POSTGRES_DB: gadm
+      POSTGRES_USER: gadm_user
+      POSTGRES_PASSWORD: gadm_password
+      POSTGRES_INITDB_ARGS: "-c shared_buffers=32MB -c max_connections=20"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./db/init:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: pgadmin
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+        reservations:
+          memory: 1G
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@example.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_CONFIG_WTF_CSRF_ENABLED: "False"
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+
+volumes:
+  postgres_data:
+  pgadmin_data:
