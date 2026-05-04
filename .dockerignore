@@ -1,3 +1,6 @@
+# Project specific
+qa-queries/
+
 # Git metadata
 .git
 .gitignore
