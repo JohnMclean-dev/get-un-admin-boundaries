@@ -7,10 +7,10 @@ services:
     deploy:
       resources:
         limits:
-          memory: 8G
-        reservations:
           memory: 4G
-    command: ["python", "/app/gadm_downloader/main.py", "--file-mode", "skip", "--db-mode", "create-if-new"]
+        reservations:
+          memory: 1G
+    command: ["python", "/app/gadm_downloader/main.py", "--file-mode", "skip", "--db-mode", "check-if-exists"]
     # command: ["python", "/app/gadm_downloader/main.py", "--help"]
 
     environment:
@@ -23,9 +23,9 @@ services:
     deploy:
       resources:
         limits:
-          memory: 4G
+          memory: 12G
         reservations:
-          memory: 2G
+          memory: 1G
     environment:
       POSTGRES_DB: gadm
       POSTGRES_USER: gadm_user
@@ -44,7 +44,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 2G
+          memory: 1G
         reservations:
           memory: 1G
     environment:

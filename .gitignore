@@ -1,5 +1,7 @@
 # Dev files
 scratch.sh
+qgis/
+scratch/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
