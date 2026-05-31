@@ -1,6 +1,4 @@
 
-DROP TABLE public.global_admin_boundaries_max_lvl;
-
 CREATE TABLE IF NOT EXISTS public.global_admin_boundaries_max_lvl AS
 
 WITH max_lvl_5 AS (

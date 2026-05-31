@@ -1,6 +1,4 @@
 
-DROP TABLE public.global_admin_boundaries_lvl5;
-
 CREATE TABLE IF NOT EXISTS public.global_admin_boundaries_lvl5 AS
 
 WITH global_admin_boundaries_lvl5_raw AS (
