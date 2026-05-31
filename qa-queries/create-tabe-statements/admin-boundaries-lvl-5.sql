@@ -1,7 +1,7 @@
 
-CREATE TABLE IF NOT EXISTS public.global_admin_boundaries_lvl5 AS
+CREATE TABLE IF NOT EXISTS public.global_admin_boundaries_lvl_5 AS
 
-WITH global_admin_boundaries_lvl5_raw AS (
+WITH global_admin_boundaries_lvl_5_raw AS (
 
     SELECT
         sovereign AS sovereignty_of,
@@ -32,7 +32,7 @@ WITH global_admin_boundaries_lvl5_raw AS (
 
 ),
 
-global_admin_boundaries_lvl5_agg AS (
+global_admin_boundaries_lvl_5_agg AS (
 
     SELECT
         sovereignty_of,
@@ -60,7 +60,7 @@ global_admin_boundaries_lvl5_agg AS (
         -- ST_Collect(geom) AS geom
         ST_Union(geom) AS geom
 
-    FROM global_admin_boundaries_lvl5_raw
+    FROM global_admin_boundaries_lvl_5_raw
 
     GROUP BY
         sovereignty_of,
@@ -84,4 +84,4 @@ SELECT
     ) AS this_uid,
 
     *
-FROM global_admin_boundaries_lvl5_agg;
+FROM global_admin_boundaries_lvl_5_agg;

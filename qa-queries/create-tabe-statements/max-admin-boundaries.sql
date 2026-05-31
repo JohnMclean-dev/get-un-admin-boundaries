@@ -13,7 +13,7 @@ WITH max_lvl_5 AS (
         
         geom
 		
-	FROM public.global_admin_boundaries_lvl5
+	FROM public.global_admin_boundaries_lvl_5
 
 	WHERE lvl_5_boundary_id != ''
 
@@ -29,7 +29,7 @@ WITH max_lvl_5 AS (
         
         geom
 
-	FROM public.global_admin_boundaries_lvl5
+	FROM public.global_admin_boundaries_lvl_5
 
 	WHERE
 		lvl_4_boundary_id != '' AND
@@ -47,7 +47,7 @@ WITH max_lvl_5 AS (
         
         geom
 
-	FROM public.global_admin_boundaries_lvl5
+	FROM public.global_admin_boundaries_lvl_5
 
 	WHERE
 		lvl_3_boundary_id != '' AND
@@ -66,7 +66,7 @@ WITH max_lvl_5 AS (
         
         geom
 
-	FROM public.global_admin_boundaries_lvl5
+	FROM public.global_admin_boundaries_lvl_5
 
 	WHERE
 		lvl_2_boundary_id != '' AND
@@ -86,7 +86,7 @@ WITH max_lvl_5 AS (
         
         geom
 
-	FROM public.global_admin_boundaries_lvl5
+	FROM public.global_admin_boundaries_lvl_5
 
 	WHERE
 		lvl_1_boundary_id != '' AND
