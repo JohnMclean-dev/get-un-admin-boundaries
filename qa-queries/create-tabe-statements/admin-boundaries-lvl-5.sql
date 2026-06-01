@@ -1,4 +1,8 @@
 
+-- Uncomment to delete table
+-- DROP TABLE IF EXISTS public.global_admin_boundaries_lvl_5;
+
+-- Create new table
 CREATE TABLE IF NOT EXISTS public.global_admin_boundaries_lvl_5 AS
 
 WITH global_admin_boundaries_lvl_5_raw AS (
@@ -84,4 +88,5 @@ SELECT
     ) AS this_uid,
 
     *
+    
 FROM global_admin_boundaries_lvl_5_agg;

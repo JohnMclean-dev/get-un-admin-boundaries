@@ -1,9 +1,14 @@
 
+-- Uncomment to delete table
+-- DROP TABLE IF EXISTS public.global_admin_boundaries_max_lvl;
+
+-- Create new table
 CREATE TABLE IF NOT EXISTS public.global_admin_boundaries_max_lvl AS
 
 WITH max_lvl_5 AS (
 
 	SELECT
+		this_uid,
 		sovereignty_of,
 
         5 as max_lvl_value,
@@ -20,6 +25,7 @@ WITH max_lvl_5 AS (
 ), max_lvl_4 AS (
 
 	SELECT
+		this_uid,
 		sovereignty_of,
 
         4 as max_lvl_value,
@@ -38,6 +44,7 @@ WITH max_lvl_5 AS (
 ), max_lvl_3 AS (
 
 	SELECT
+		this_uid,
 		sovereignty_of,
 
         3 as max_lvl_value,
@@ -57,6 +64,7 @@ WITH max_lvl_5 AS (
 ), max_lvl_2 AS (
 
 	SELECT
+		this_uid,
 		sovereignty_of,
 
         2 as max_lvl_value,
@@ -77,6 +85,7 @@ WITH max_lvl_5 AS (
 ), max_lvl_1 AS (
 
 	SELECT
+		this_uid,
 		sovereignty_of,
 
         1 as max_lvl_value,
