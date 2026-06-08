@@ -33,7 +33,10 @@ SELECT
 	-- Governance
 	sovereign,
 	LOWER(sovereign) = LOWER(ANY_VALUE(name_0)) AS is_sovereign,
-	continent,
+	CASE
+		WHEN LOWER(continent) IN ('australia', 'oceania') THEN 'Oceania'
+		ELSE continent
+	END AS continent,
 
 	-- Geometry
 	ST_UNION(geom) as geom
