@@ -1,6 +1,6 @@
 
 -- Uncomment to delete table
--- DROP TABLE IF EXISTS public.global_admin_boundaries_lvl_3;
+DROP TABLE IF EXISTS public.global_admin_boundaries_fully_sovereign;
 
 -- Create new table
 CREATE TABLE IF NOT EXISTS public.global_admin_boundaries_fully_sovereign AS

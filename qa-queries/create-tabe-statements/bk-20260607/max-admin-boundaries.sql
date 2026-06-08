@@ -1,6 +1,6 @@
 
 -- Uncomment to delete table
--- DROP TABLE IF EXISTS public.global_admin_boundaries_max_lvl;
+DROP TABLE IF EXISTS public.global_admin_boundaries_max_lvl;
 
 -- Create new table
 CREATE TABLE IF NOT EXISTS public.global_admin_boundaries_max_lvl AS
