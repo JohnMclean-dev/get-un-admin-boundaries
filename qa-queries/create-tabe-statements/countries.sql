@@ -26,7 +26,7 @@ select distinct
 
     count(distinct continent) as continents_counted,
 
-    sum(area_m2) as area_m2,
+    st_area(st_unaryunion(st_collect(geom))::geography) as area_m2,
     st_union(geom) as geom
 
 from public.regions
@@ -38,10 +38,6 @@ group by
     nation,
 
     country_id,
-    country,
-
-    region_id,
-    region,
-    region_type
+    country
 
 order by this_uid;

@@ -32,7 +32,7 @@ select distinct
 
     count(distinct community_id) filter (where community_id <> '') as communities_counted,
 
-    sum(area_m2) as area_m2,
+    st_area(st_unaryunion(st_collect(geom))::geography) as area_m2,
     st_union(geom) as geom
 
 from public.communities
