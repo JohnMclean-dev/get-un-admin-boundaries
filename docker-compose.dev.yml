@@ -23,14 +23,16 @@ services:
     deploy:
       resources:
         limits:
-          memory: 12G
+          memory: 6G
+          cpus: 4
         reservations:
           memory: 1G
+          cpus: 1
     environment:
       POSTGRES_DB: gadm
       POSTGRES_USER: gadm_user
       POSTGRES_PASSWORD: gadm_password
-      POSTGRES_INITDB_ARGS: "-c shared_buffers=32MB -c max_connections=20"
+      # POSTGRES_INITDB_ARGS: "-c shared_buffers=32MB -c max_connections=20"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./db/init:/docker-entrypoint-initdb.d

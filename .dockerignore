@@ -1,5 +1,7 @@
 # Project specific
 qa-queries/
+qgis/
+world-cities-data/
 
 # Git metadata
 .git
